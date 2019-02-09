@@ -137,6 +137,8 @@ def optimize_route(
     choose where the day begins.
     """
     n = len(points)
+    if n == 0:
+        return RoutePlan(order=[], total_km=0.0, original_km=0.0, legs_km=[])
     for name, idx in (("start", start), ("end", end)):
         if idx is not None and not 0 <= idx < n:
             raise IndexError(f"{name} index {idx} out of range for {n} points")
