@@ -1,9 +1,9 @@
-"""Open-path route ordering: nearest-neighbour construction followed by 2-opt improvement.
+"""Open-path route ordering: nearest-neighbour construction, then 2-opt / or-opt improvement.
 
 A day's itinerary is an *open* path (you don't have to return to the first stop), optionally
 with a pinned start (e.g. the hotel) and/or a pinned end (e.g. the train station). This is a
 small travelling-salesman variant; for the handful of stops a person visits in a day the
-NN + 2-opt heuristic is fast and typically within a few percent of optimal.
+NN + 2-opt (+ or-opt) heuristic is fast and typically within a few percent of optimal.
 """
 
 from __future__ import annotations
@@ -95,6 +95,67 @@ def two_opt(
     return route
 
 
+def or_opt(
+    order: list[int],
+    dist: Matrix,
+    *,
+    fix_start: bool = True,
+    fix_end: bool = False,
+    max_segment: int = 3,
+    epsilon: float = 1e-9,
+) -> list[int]:
+    """Relocate short runs of consecutive stops (optionally reversed) to a cheaper position.
+
+    2-opt alone gets stuck when a single stop sits on the "wrong side" of the path; moving
+    1-3 stop segments elsewhere fixes most of those local minima.
+    """
+    route = list(order)
+    n = len(route)
+    first = 1 if fix_start else 0
+    last = n - 2 if fix_end else n - 1
+    improved = True
+    while improved:
+        improved = False
+        best_len = path_length(route, dist)
+        for seg_len in range(1, max_segment + 1):
+            for i in range(first, last - seg_len + 2):
+                segment = route[i : i + seg_len]
+                rest = route[:i] + route[i + seg_len :]
+                # Insertion points that keep pinned endpoints in place.
+                lo = first
+                hi = len(rest) - (1 if fix_end else 0)
+                for k in range(lo, hi + 1):
+                    if k == i:
+                        continue
+                    for seg in (segment, segment[::-1]):
+                        candidate = rest[:k] + seg + rest[k:]
+                        length = path_length(candidate, dist)
+                        if length + epsilon < best_len:
+                            route, best_len, improved = candidate, length, True
+                            break
+                    if improved:
+                        break
+                if improved:
+                    break
+            if improved:
+                break
+    return route
+
+
+def local_search(
+    order: list[int], dist: Matrix, *, fix_start: bool, fix_end: bool, max_rounds: int = 20
+) -> list[int]:
+    """Alternate 2-opt and or-opt until neither finds an improvement."""
+    route = order
+    for _ in range(max_rounds):
+        before = path_length(route, dist)
+        route = two_opt(route, dist, fix_start=fix_start, fix_end=fix_end)
+        route = or_opt(route, dist, fix_start=fix_start, fix_end=fix_end)
+        if path_length(route, dist) + 1e-9 >= before:
+            break
+    return route
+
+
 def optimize_order(
     dist: Matrix, *, start: int | None = 0, end: int | None = None
 ) -> list[int]:
@@ -115,7 +176,7 @@ def optimize_order(
     best: list[int] | None = None
     best_len = float("inf")
     for s in candidates:
-        route = two_opt(
+        route = local_search(
             nearest_neighbour(dist, s, end),
             dist,
             fix_start=start is not None,
