@@ -8,6 +8,7 @@ from typing import Any
 from flask import Flask
 
 from .config import CONFIGS
+from . import models  # noqa: F401  (register tables)
 from .extensions import api, db
 
 
