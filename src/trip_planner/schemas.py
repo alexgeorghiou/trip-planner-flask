@@ -86,7 +86,7 @@ class TripBaseSchema(Schema):
     length_days = fields.Int(dump_only=True)
     stop_count = fields.Int(dump_only=True)
 
-    @validates_schema
+    @validates_schema(skip_on_field_errors=False)
     def check_dates(self, data: dict[str, Any], **_: Any) -> None:
         start, end = data.get("start_date"), data.get("end_date")
         if start and end and end < start:
