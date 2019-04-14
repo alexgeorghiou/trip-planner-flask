@@ -101,3 +101,9 @@ def test_days_listing(client):
     trip = create_trip(client)
     days = client.get(f"/api/trips/{trip['id']}/days").get_json()
     assert len(days) == 3 and all(d["stops"] == [] for d in days)
+
+
+def test_api_404_is_json(client):
+    resp = client.get("/api/trips/12345")
+    assert resp.status_code == 404
+    assert resp.is_json and resp.get_json()["code"] == 404

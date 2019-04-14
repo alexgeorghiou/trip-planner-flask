@@ -14,6 +14,7 @@ from .config import CONFIGS
 from .errors import DomainError
 from .extensions import db
 from .geocoding import Geocoder, build_geocoder
+from .web import bp as web_bp
 
 
 def create_app(
@@ -31,6 +32,7 @@ def create_app(
     db.init_app(app)
     app.extensions["smorest_api"] = create_api(app)
     app.extensions["geocoder"] = geocoder or build_geocoder(app.config)
+    app.register_blueprint(web_bp)
 
     register_error_handlers(app)
 

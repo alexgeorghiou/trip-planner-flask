@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero">
+  <h1>Plan trips day by day</h1>
+  <p>Create a trip, search places on OpenStreetMap, drop them onto days and let the planner
+     find a shorter route between them. Share a read-only link when you're done.</p>
+</section>
+
+<div class="grid">
+  <section class="card">
+    <h2>Your trips</h2>
+    {% if trips %}
+    <ul class="trip-list">
+      {% for trip in trips %}
+      <li>
+        <a href="{{ url_for('web.trip_detail', trip_id=trip.id) }}">{{ trip.title }}</a>
+        <small>
+          {% if trip.destination %}{{ trip.destination }} &middot; {% endif %}
+          {{ trip.start_date.strftime('%d %b %Y') }} &ndash; {{ trip.end_date.strftime('%d %b %Y') }}
+          &middot; {{ trip.length_days }} day{{ 's' if trip.length_days != 1 }}
+          &middot; {{ trip.stop_count }} stop{{ 's' if trip.stop_count != 1 }}
+        </small>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="muted">No trips yet. Start one on the right.</p>
+    {% endif %}
+  </section>
+
+  <section class="card">
+    <h2>New trip</h2>
+    <form method="post" action="{{ url_for('web.create_trip') }}" class="stack">
+      {% macro field_error(name) %}
+        {% if errors.get(name) %}<span class="field-error">{{ errors[name][0] }}</span>{% endif %}
+      {% endmacro %}
+      {% if errors.get('_schema') %}<p class="flash error">{{ errors['_schema'][0] }}</p>{% endif %}
+      <label>Title
+        <input name="title" required maxlength="200" value="{{ form.get('title', '') }}">
+        {{ field_error('title') }}
+      </label>
+      <label>Destination
+        <input name="destination" maxlength="200" value="{{ form.get('destination', '') }}">
+      </label>
+      <div class="row">
+        <label>From
+          <input type="date" name="start_date" required value="{{ form.get('start_date', '') }}">
+          {{ field_error('start_date') }}
+        </label>
+        <label>To
+          <input type="date" name="end_date" required value="{{ form.get('end_date', '') }}">
+          {{ field_error('end_date') }}
+        </label>
+      </div>
+      <label>Notes
+        <textarea name="notes" rows="2">{{ form.get('notes', '') }}</textarea>
+      </label>
+      <button type="submit" class="primary">Create trip</button>
+    </form>
+  </section>
+</div>
+{% endblock %}

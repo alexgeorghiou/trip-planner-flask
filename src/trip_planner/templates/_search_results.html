@@ -1,0 +1,27 @@
+{% if error %}
+<p class="flash error">{{ error }}</p>
+{% elif query and not places %}
+<p class="muted">No places found for &ldquo;{{ query }}&rdquo;.</p>
+{% endif %}
+{% if places %}
+<ul class="place-results">
+  {% for place in places %}
+  <li>
+    <form hx-post="{{ url_for('web.add_stop', day_id=day.id) }}"
+          hx-target="#day-{{ day.id }}" hx-swap="outerHTML">
+      <input type="hidden" name="name" value="{{ place.name }}">
+      <input type="hidden" name="address" value="{{ place.display_name }}">
+      <input type="hidden" name="lat" value="{{ place.lat }}">
+      <input type="hidden" name="lon" value="{{ place.lon }}">
+      <input type="hidden" name="category" value="{{ place.category or '' }}">
+      <input type="hidden" name="osm_ref" value="{{ place.osm_ref or '' }}">
+      <div>
+        <strong>{{ place.name }}</strong>
+        <small class="muted">{{ place.display_name }}</small>
+      </div>
+      <button type="submit">Add</button>
+    </form>
+  </li>
+  {% endfor %}
+</ul>
+{% endif %}

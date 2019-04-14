@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}{{ trip.title }} &middot; Trip Planner{% endblock %}
+{% block content %}
+<section class="trip-header">
+  <div>
+    <h1>{{ trip.title }}</h1>
+    <p class="muted">
+      {% if trip.destination %}{{ trip.destination }} &middot; {% endif %}
+      {{ trip.start_date.strftime('%d %b') }} &ndash; {{ trip.end_date.strftime('%d %b %Y') }}
+      &middot; {{ trip.length_days }} day{{ 's' if trip.length_days != 1 }}
+    </p>
+    {% if trip.notes %}<p>{{ trip.notes }}</p>{% endif %}
+  </div>
+  {% if editable %}
+  <button class="danger" hx-post="{{ url_for('web.delete_trip', trip_id=trip.id) }}"
+          hx-confirm="Delete {{ trip.title }} and all its days?">Delete trip</button>
+  {% endif %}
+</section>
+
+<div class="layout">
+  <div class="days">
+    {% for day in trip.days %}
+      {% include "_day.html" %}
+    {% endfor %}
+  </div>
+  <aside class="sidebar">
+    <div id="map" class="map" data-src="{{ url_for('web.trip_map', trip_id=trip.id) }}"></div>
+    {% if editable %}{% include "_shares.html" %}{% endif %}
+  </aside>
+</div>
+{% endblock %}

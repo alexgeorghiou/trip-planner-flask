@@ -1,0 +1,66 @@
+{% set legs = day_legs(day) %}
+<section class="day card" id="day-{{ day.id }}">
+  <header class="day-header">
+    <div>
+      <h2>Day {{ day.number }} <small>{{ day.date.strftime('%A %d %B') }}</small></h2>
+      {% if day.title %}<p class="muted">{{ day.title }}</p>{% endif %}
+    </div>
+    <span class="badge" title="Straight-line distance between consecutive stops">
+      {{ '%.1f'|format(legs|sum) }} km
+    </span>
+  </header>
+
+  {% if message %}<p class="flash ok" role="status">{{ message }}</p>{% endif %}
+  {% if error %}<p class="flash error" role="alert">{{ error }}</p>{% endif %}
+
+  {% if day.stops %}
+  <ol class="stops">
+    {% for stop in day.stops %}
+    <li class="stop">
+      <span class="pos">{{ loop.index }}</span>
+      <div class="stop-body">
+        <strong>{{ stop.name }}</strong>
+        {% if stop.arrival_time %}<span class="time">{{ stop.arrival_time.strftime('%H:%M') }}</span>{% endif %}
+        {% if stop.address and stop.address != stop.name %}<small class="muted">{{ stop.address }}</small>{% endif %}
+        {% if not loop.first %}
+        <small class="leg">{{ '%.2f'|format(legs[loop.index0 - 1]) }} km from previous stop</small>
+        {% endif %}
+      </div>
+      {% if editable %}
+      <div class="stop-actions" hx-target="#day-{{ day.id }}" hx-swap="outerHTML">
+        <button hx-post="{{ url_for('web.nudge_stop', stop_id=stop.id, direction='up') }}"
+                {% if loop.first %}disabled{% endif %} aria-label="Move {{ stop.name }} up">&uarr;</button>
+        <button hx-post="{{ url_for('web.nudge_stop', stop_id=stop.id, direction='down') }}"
+                {% if loop.last %}disabled{% endif %} aria-label="Move {{ stop.name }} down">&darr;</button>
+        <button class="danger" hx-post="{{ url_for('web.delete_stop', stop_id=stop.id) }}"
+                hx-confirm="Remove {{ stop.name }}?" aria-label="Remove {{ stop.name }}">&times;</button>
+      </div>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ol>
+  {% else %}
+  <p class="muted">Nothing planned yet.</p>
+  {% endif %}
+
+  {% if editable %}
+  <div class="day-tools">
+    <form class="search" hx-get="{{ url_for('web.search_places', day_id=day.id) }}"
+          hx-trigger="input changed delay:500ms from:find input, submit"
+          hx-target="#results-{{ day.id }}" hx-indicator="#spinner-{{ day.id }}">
+      <input type="search" name="q" placeholder="Search a place to add&hellip;" autocomplete="off"
+             aria-label="Search places for day {{ day.number }}">
+      <span class="spinner htmx-indicator" id="spinner-{{ day.id }}">searching&hellip;</span>
+    </form>
+    <div id="results-{{ day.id }}" class="results"></div>
+
+    {% if day.stops|length >= 3 %}
+    <form hx-post="{{ url_for('web.optimize_day', day_id=day.id) }}"
+          hx-target="#day-{{ day.id }}" hx-swap="outerHTML" class="optimize">
+      <label><input type="checkbox" name="keep_last"> keep last stop fixed</label>
+      <button type="submit">Optimise route</button>
+    </form>
+    {% endif %}
+  </div>
+  {% endif %}
+</section>

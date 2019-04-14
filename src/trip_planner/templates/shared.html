@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}{{ trip.title }} (shared) &middot; Trip Planner{% endblock %}
+{% block nav %}<span class="pill">Read-only view</span>{% endblock %}
+{% block content %}
+<section class="trip-header">
+  <div>
+    <h1>{{ trip.title }}</h1>
+    <p class="muted">
+      {% if trip.destination %}{{ trip.destination }} &middot; {% endif %}
+      {{ trip.start_date.strftime('%d %b') }} &ndash; {{ trip.end_date.strftime('%d %b %Y') }}
+    </p>
+  </div>
+</section>
+<div class="layout">
+  <div class="days">
+    {% for day in trip.days %}
+      {% include "_day.html" %}
+    {% endfor %}
+  </div>
+  <aside class="sidebar">
+    <div id="map" class="map"></div>
+    <script type="application/json" id="map-data">{{ map_data|tojson }}</script>
+  </aside>
+</div>
+{% endblock %}
