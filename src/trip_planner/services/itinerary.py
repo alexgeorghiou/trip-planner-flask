@@ -8,6 +8,7 @@ Invariants maintained here:
 from __future__ import annotations
 
 import datetime as dt
+import itertools
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from typing import Any
@@ -22,8 +23,15 @@ MAX_STOPS_PER_DAY = 40
 
 TRIP_FIELDS = ("title", "destination", "start_date", "end_date", "notes")
 STOP_FIELDS = (
-    "name", "address", "lat", "lon", "category", "osm_ref",
-    "arrival_time", "duration_minutes", "notes",
+    "name",
+    "address",
+    "lat",
+    "lon",
+    "category",
+    "osm_ref",
+    "arrival_time",
+    "duration_minutes",
+    "notes",
 )
 
 
@@ -40,6 +48,7 @@ def _validate_range(start: dt.date, end: dt.date) -> None:
 
 
 # --- trips -----------------------------------------------------------------------------------
+
 
 def create_trip(data: dict[str, Any]) -> Trip:
     _validate_range(data["start_date"], data["end_date"])
@@ -106,6 +115,7 @@ def delete_trip(trip: Trip) -> None:
 
 # --- days ------------------------------------------------------------------------------------
 
+
 def update_day(day: Day, data: dict[str, Any]) -> Day:
     for key in ("title", "notes"):
         if key in data:
@@ -120,6 +130,7 @@ def _renumber(stops: Sequence[Stop]) -> None:
 
 
 # --- stops -----------------------------------------------------------------------------------
+
 
 def add_stop(day: Day, data: dict[str, Any], *, position: int | None = None) -> Stop:
     if len(day.stops) >= MAX_STOPS_PER_DAY:
@@ -186,6 +197,7 @@ def move_stop(stop: Stop, target: Day, position: int | None = None) -> Stop:
 
 # --- routing ---------------------------------------------------------------------------------
 
+
 @dataclass(frozen=True)
 class DayRoute:
     day: Day
@@ -216,4 +228,4 @@ def optimize_day(
 
 def day_legs_km(day: Day) -> list[float]:
     pts = [Point(s.lat, s.lon) for s in day.stops]
-    return [haversine_km(a, b) for a, b in zip(pts, pts[1:], strict=False)]
+    return [haversine_km(a, b) for a, b in itertools.pairwise(pts)]

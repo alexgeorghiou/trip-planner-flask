@@ -3,16 +3,27 @@ import pytest
 
 @pytest.fixture()
 def trip(client):
-    resp = client.post("/api/trips", json={"title": "Kyoto", "start_date": "2026-03-01",
-                                           "end_date": "2026-03-02", "notes": "private notes"})
+    resp = client.post(
+        "/api/trips",
+        json={
+            "title": "Kyoto",
+            "start_date": "2026-03-01",
+            "end_date": "2026-03-02",
+            "notes": "private notes",
+        },
+    )
     trip = resp.get_json()
-    client.post(f"/api/days/{trip['days'][0]['id']}/stops",
-                json={"name": "Fushimi Inari", "lat": 34.9671, "lon": 135.7727})
+    client.post(
+        f"/api/days/{trip['days'][0]['id']}/stops",
+        json={"name": "Fushimi Inari", "lat": 34.9671, "lon": 135.7727},
+    )
     return trip
 
 
 def test_share_lifecycle(client, trip):
-    resp = client.post(f"/api/trips/{trip['id']}/shares", json={"label": "parents", "expires_in_days": 30})
+    resp = client.post(
+        f"/api/trips/{trip['id']}/shares", json={"label": "parents", "expires_in_days": 30}
+    )
     assert resp.status_code == 201
     link = resp.get_json()
     assert link["active"] is True

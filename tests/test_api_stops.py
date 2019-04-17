@@ -11,14 +11,17 @@ PLACES = {
 
 @pytest.fixture()
 def trip(client):
-    resp = client.post("/api/trips", json={"title": "Rome", "start_date": "2026-04-10",
-                                           "end_date": "2026-04-11"})
+    resp = client.post(
+        "/api/trips", json={"title": "Rome", "start_date": "2026-04-10", "end_date": "2026-04-11"}
+    )
     return resp.get_json()
 
 
 def add(client, day_id, name, **extra):
     lat, lon = PLACES[name]
-    resp = client.post(f"/api/days/{day_id}/stops", json={"name": name, "lat": lat, "lon": lon, **extra})
+    resp = client.post(
+        f"/api/days/{day_id}/stops", json={"name": name, "lat": lat, "lon": lon, **extra}
+    )
     assert resp.status_code == 201, resp.get_json()
     return resp.get_json()
 
@@ -45,7 +48,9 @@ def test_insert_at_position(client, trip):
     assert stop_names(client, day) == ["Trevi Fountain", "Colosseum", "Pantheon"]
 
 
-@pytest.mark.parametrize("bad", [{"lat": 95}, {"lon": -200}, {"name": ""}, {"duration_minutes": -5}])
+@pytest.mark.parametrize(
+    "bad", [{"lat": 95}, {"lon": -200}, {"name": ""}, {"duration_minutes": -5}]
+)
 def test_invalid_stop_payloads(client, trip, bad):
     body = {"name": "x", "lat": 41.9, "lon": 12.5, **bad}
     resp = client.post(f"/api/days/{trip['days'][0]['id']}/stops", json=body)
@@ -95,7 +100,9 @@ def test_optimize_endpoint(client, trip):
     preview = client.post(f"/api/days/{day}/optimize?apply=false").get_json()
     assert preview["applied"] is False
     assert preview["total_km"] < preview["original_km"]
-    assert preview["saved_km"] == pytest.approx(preview["original_km"] - preview["total_km"], abs=0.002)
+    assert preview["saved_km"] == pytest.approx(
+        preview["original_km"] - preview["total_km"], abs=0.002
+    )
     assert stop_names(client, day)[1] == "Vatican Museums"  # unchanged
 
     applied = client.post(f"/api/days/{day}/optimize").get_json()

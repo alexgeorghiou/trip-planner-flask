@@ -7,9 +7,16 @@ HX = {"HX-Request": "true"}
 
 @pytest.fixture()
 def trip_id(client):
-    resp = client.post("/trips", data={"title": "Barcelona", "destination": "Barcelona",
-                                       "start_date": "2026-05-01", "end_date": "2026-05-02",
-                                       "notes": ""})
+    resp = client.post(
+        "/trips",
+        data={
+            "title": "Barcelona",
+            "destination": "Barcelona",
+            "start_date": "2026-05-01",
+            "end_date": "2026-05-02",
+            "notes": "",
+        },
+    )
     assert resp.status_code == 303
     return int(resp.headers["Location"].rsplit("/", 1)[-1])
 
@@ -30,16 +37,20 @@ def test_index_lists_trips(client, trip_id):
 
 
 def test_create_trip_form_errors_rerender(client):
-    resp = client.post("/trips", data={"title": "", "start_date": "2026-05-02",
-                                       "end_date": "2026-05-01"})
+    resp = client.post(
+        "/trips", data={"title": "", "start_date": "2026-05-02", "end_date": "2026-05-01"}
+    )
     assert resp.status_code == 422
     html = resp.get_data(as_text=True)
     assert "field-error" in html
 
 
 def test_htmx_create_uses_hx_redirect(client):
-    resp = client.post("/trips", data={"title": "Paris", "start_date": "2026-06-01",
-                                       "end_date": "2026-06-01"}, headers=HX)
+    resp = client.post(
+        "/trips",
+        data={"title": "Paris", "start_date": "2026-06-01", "end_date": "2026-06-01"},
+        headers=HX,
+    )
     assert resp.status_code == 204
     assert resp.headers["HX-Redirect"].startswith("/trips/")
 
@@ -69,7 +80,9 @@ def test_search_with_no_results(client, trip_id):
 
 def test_invalid_stop_returns_422_fragment(client, trip_id):
     day = first_day_id(client, trip_id)
-    resp = client.post(f"/days/{day}/stops", data={"name": "x", "lat": "200", "lon": "0"}, headers=HX)
+    resp = client.post(
+        f"/days/{day}/stops", data={"name": "x", "lat": "200", "lon": "0"}, headers=HX
+    )
     assert resp.status_code == 422
     assert "flash error" in resp.get_data(as_text=True)
 
@@ -109,8 +122,9 @@ def test_map_json(client, trip_id):
 def test_share_flow_renders_read_only_page(client, trip_id):
     day = first_day_id(client, trip_id)
     add_from_search(client, day, "boqueria")
-    html = client.post(f"/trips/{trip_id}/shares", data={"label": "friends", "expires_in_days": "7"},
-                       headers=HX).get_data(as_text=True)
+    html = client.post(
+        f"/trips/{trip_id}/shares", data={"label": "friends", "expires_in_days": "7"}, headers=HX
+    ).get_data(as_text=True)
     url = re.search(r'value="(http://[^"]+/s/[^"]+)"', html).group(1)
     path = url.split("localhost", 1)[1]
 

@@ -8,10 +8,12 @@ def test_matches_case_insensitively():
 
 
 def test_display_name_matches_rank_after_name_matches():
-    g = FakeGeocoder([
-        Place("Old Town", "Old Town, Rome", 41.9, 12.5),
-        Place("Rome Gate", "Gate, Somewhere", 41.0, 12.0),
-    ])
+    g = FakeGeocoder(
+        [
+            Place("Old Town", "Old Town, Rome", 41.9, 12.5),
+            Place("Rome Gate", "Gate, Somewhere", 41.0, 12.0),
+        ]
+    )
     assert [p.name for p in g.search("rome")] == ["Rome Gate", "Old Town"]
 
 

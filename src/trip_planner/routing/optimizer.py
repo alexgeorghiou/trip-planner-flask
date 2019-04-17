@@ -8,6 +8,7 @@ NN + 2-opt (+ or-opt) heuristic is fast and typically within a few percent of op
 
 from __future__ import annotations
 
+import itertools
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 
@@ -32,7 +33,7 @@ class RoutePlan:
 
 
 def path_length(order: Sequence[int], dist: Matrix) -> float:
-    return sum(dist[a][b] for a, b in zip(order, order[1:], strict=False))
+    return sum(dist[a][b] for a, b in itertools.pairwise(order))
 
 
 def route_length_km(points: Sequence[Point]) -> float:
@@ -156,9 +157,7 @@ def local_search(
     return route
 
 
-def optimize_order(
-    dist: Matrix, *, start: int | None = 0, end: int | None = None
-) -> list[int]:
+def optimize_order(dist: Matrix, *, start: int | None = 0, end: int | None = None) -> list[int]:
     n = len(dist)
     if n <= 2:
         order = list(range(n))
@@ -208,7 +207,7 @@ def optimize_route(
 
     dist = distance_matrix(list(points))
     order = optimize_order(dist, start=start, end=end)
-    legs = [dist[a][b] for a, b in zip(order, order[1:], strict=False)]
+    legs = [dist[a][b] for a, b in itertools.pairwise(order)]
     return RoutePlan(
         order=order,
         total_km=sum(legs),

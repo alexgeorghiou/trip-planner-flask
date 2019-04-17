@@ -56,7 +56,9 @@ class NominatimGeocoder(Geocoder):
                     now += wait
             self._last_request = now
 
-    def search(self, query: str, *, limit: int = 5, country_codes: list[str] | None = None) -> list[Place]:
+    def search(
+        self, query: str, *, limit: int = 5, country_codes: list[str] | None = None
+    ) -> list[Place]:
         query = query.strip()
         if not query:
             return []

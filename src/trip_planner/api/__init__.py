@@ -31,7 +31,9 @@ def schema_name_resolver(schema: Any) -> str:
 def create_api(app: Flask) -> Api:
     api = Api(
         app,
-        spec_kwargs={"marshmallow_plugin": MarshmallowPlugin(schema_name_resolver=schema_name_resolver)},
+        spec_kwargs={
+            "marshmallow_plugin": MarshmallowPlugin(schema_name_resolver=schema_name_resolver)
+        },
     )
     for blp in (trips_blp, stops_blp, places_blp, shares_blp):
         api.register_blueprint(blp, url_prefix="/api")

@@ -10,10 +10,12 @@ def test_cascade_and_ordering(app):
         d2 = Day(date=dt.date(2026, 5, 2))
         d1 = Day(date=dt.date(2026, 5, 1))
         trip.days.extend([d2, d1])
-        d1.stops.extend([
-            Stop(name="B", lat=41.4, lon=2.17, position=1),
-            Stop(name="A", lat=41.4, lon=2.17, position=0),
-        ])
+        d1.stops.extend(
+            [
+                Stop(name="B", lat=41.4, lon=2.17, position=1),
+                Stop(name="A", lat=41.4, lon=2.17, position=0),
+            ]
+        )
         db.session.add(trip)
         db.session.commit()
         db.session.expire_all()

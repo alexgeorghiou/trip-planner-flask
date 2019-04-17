@@ -30,15 +30,18 @@ def test_create_trip_generates_one_day_per_date(ctx):
 
 def test_rejects_inverted_and_overlong_ranges(ctx):
     with pytest.raises(DomainError):
-        itinerary.create_trip({"title": "x", "start_date": dt.date(2026, 1, 2),
-                               "end_date": dt.date(2026, 1, 1)})
+        itinerary.create_trip(
+            {"title": "x", "start_date": dt.date(2026, 1, 2), "end_date": dt.date(2026, 1, 1)}
+        )
     with pytest.raises(DomainError, match="90 days"):
         make_trip(days=91)
 
 
 def test_extending_trip_adds_days(ctx):
     trip = make_trip(days=2)
-    itinerary.update_trip(trip, {"end_date": dt.date(2026, 5, 4), "start_date": dt.date(2026, 4, 30)})
+    itinerary.update_trip(
+        trip, {"end_date": dt.date(2026, 5, 4), "start_date": dt.date(2026, 4, 30)}
+    )
     assert [d.date.day for d in trip.days] == [30, 1, 2, 3, 4]
 
 
@@ -62,7 +65,9 @@ def test_shift_trip_keeps_plans_with_their_day(ctx):
     itinerary.shift_trip(trip, dt.date(2026, 5, 2))  # overlapping shift forward
     assert trip.start_date == dt.date(2026, 5, 2)
     assert [(d.date.day, names(d)) for d in trip.days] == [
-        (2, ["Park Güell"]), (3, ["La Boqueria"]), (4, []),
+        (2, ["Park Güell"]),
+        (3, ["La Boqueria"]),
+        (4, []),
     ]
     itinerary.shift_trip(trip, dt.date(2026, 4, 29))  # and backward
     assert [d.date.day for d in trip.days] == [29, 30, 1]
@@ -99,7 +104,7 @@ def test_reorder_requires_exact_permutation(ctx):
 def test_move_stop_between_days(ctx):
     trip = make_trip()
     d1, d2 = trip.days[0], trip.days[1]
-    a, b = add_named_stops(d1, ["Park Güell", "Casa Batlló"])
+    a, _b = add_named_stops(d1, ["Park Güell", "Casa Batlló"])
     add_named_stops(d2, ["La Boqueria"])
     itinerary.move_stop(a, d2, position=0)
     assert names(d1) == ["Casa Batlló"] and positions(d1) == [0]
@@ -123,8 +128,17 @@ def test_move_stop_across_trips_is_rejected(ctx):
 def test_optimize_day_orders_stops_geographically(ctx):
     day = make_trip().days[0]
     # Zig-zag order: north, south, north, south...
-    add_named_stops(day, ["Park Güell", "Montjuïc Castle", "Sagrada Familia",
-                          "La Boqueria", "Casa Batlló", "Barceloneta Beach"])
+    add_named_stops(
+        day,
+        [
+            "Park Güell",
+            "Montjuïc Castle",
+            "Sagrada Familia",
+            "La Boqueria",
+            "Casa Batlló",
+            "Barceloneta Beach",
+        ],
+    )
     before = sum(itinerary.day_legs_km(day))
     result = itinerary.optimize_day(day)
     after = sum(itinerary.day_legs_km(day))

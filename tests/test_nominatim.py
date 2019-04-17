@@ -62,7 +62,9 @@ def test_sends_identifying_headers_and_params():
 
 
 def test_falls_back_to_first_display_segment_for_name():
-    g = make(lambda r: httpx.Response(200, json=[{"lat": "1", "lon": "2", "display_name": "Foo, Bar"}]))
+    g = make(
+        lambda r: httpx.Response(200, json=[{"lat": "1", "lon": "2", "display_name": "Foo, Bar"}])
+    )
     assert g.search("foo")[0].name == "Foo"
 
 

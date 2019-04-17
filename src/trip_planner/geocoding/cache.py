@@ -19,7 +19,9 @@ class CachingGeocoder(Geocoder):
         self.hits = 0
         self.misses = 0
 
-    def search(self, query: str, *, limit: int = 5, country_codes: list[str] | None = None) -> list[Place]:
+    def search(
+        self, query: str, *, limit: int = 5, country_codes: list[str] | None = None
+    ) -> list[Place]:
         key: CacheKey = (
             " ".join(query.casefold().split()),
             limit,

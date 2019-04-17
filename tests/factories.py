@@ -17,16 +17,16 @@ BCN = {
 
 
 def make_trip(title="Barcelona long weekend", start=dt.date(2026, 5, 1), days=3, **extra):
-    return itinerary.create_trip({
-        "title": title,
-        "destination": "Barcelona",
-        "start_date": start,
-        "end_date": start + dt.timedelta(days=days - 1),
-        **extra,
-    })
+    return itinerary.create_trip(
+        {
+            "title": title,
+            "destination": "Barcelona",
+            "start_date": start,
+            "end_date": start + dt.timedelta(days=days - 1),
+            **extra,
+        }
+    )
 
 
 def add_named_stops(day, names):
-    return [
-        itinerary.add_stop(day, {"name": n, "lat": BCN[n][0], "lon": BCN[n][1]}) for n in names
-    ]
+    return [itinerary.add_stop(day, {"name": n, "lat": BCN[n][0], "lon": BCN[n][1]}) for n in names]

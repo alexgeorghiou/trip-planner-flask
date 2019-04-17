@@ -51,8 +51,9 @@ def form_data(schema: Schema) -> dict[str, Any]:
     return schema.load(raw)
 
 
-def render_day(day: Day, *, message: str | None = None, error: str | None = None,
-               status: int = 200) -> Response:
+def render_day(
+    day: Day, *, message: str | None = None, error: str | None = None, status: int = 200
+) -> Response:
     html = render_template("_day.html", day=day, editable=True, message=message, error=error)
     resp = make_response(html, status)
     # Let the map refresh its markers for this day.
@@ -69,6 +70,7 @@ def first_error(err: ValidationError) -> str:
 
 # --- trips -----------------------------------------------------------------------------------
 
+
 @bp.get("/")
 def index() -> str:
     trips = db.session.scalars(select(Trip).order_by(Trip.start_date, Trip.id)).all()
@@ -81,14 +83,18 @@ def create_trip() -> Any:
         trip = itinerary.create_trip(form_data(TripBaseSchema()))
     except ValidationError as err:
         trips = db.session.scalars(select(Trip).order_by(Trip.start_date)).all()
-        return render_template("index.html", trips=trips, errors=err.normalized_messages(),
-                               form=request.form), 422
+        return render_template(
+            "index.html", trips=trips, errors=err.normalized_messages(), form=request.form
+        ), 422
     except DomainError as err:
         db.session.rollback()
         trips = db.session.scalars(select(Trip).order_by(Trip.start_date)).all()
-        return render_template("index.html", trips=trips,
-                               errors={err.field or "_schema": [err.message]},
-                               form=request.form), 422
+        return render_template(
+            "index.html",
+            trips=trips,
+            errors={err.field or "_schema": [err.message]},
+            form=request.form,
+        ), 422
     target = url_for("web.trip_detail", trip_id=trip.id)
     if is_htmx():
         return Response(status=204, headers={"HX-Redirect": target})
@@ -129,6 +135,7 @@ def map_payload(trip: Trip) -> dict[str, Any]:
 
 
 # --- days & stops ----------------------------------------------------------------------------
+
 
 @bp.get("/days/<int:day_id>/search")
 def search_places(day_id: int) -> str:
@@ -191,6 +198,7 @@ def optimize_day(day_id: int) -> Response:
 
 # --- sharing ---------------------------------------------------------------------------------
 
+
 def render_shares(trip: Trip, *, error: str | None = None, status: int = 200) -> tuple[str, int]:
     return render_template("_shares.html", trip=trip, error=error), status
 
@@ -220,8 +228,9 @@ def shared_trip(token: str) -> Any:
     trip = sharing.resolve_share_token(token)
     if trip is None:
         abort(404)
-    resp = make_response(render_template("shared.html", trip=trip, editable=False,
-                                         map_data=map_payload(trip)))
+    resp = make_response(
+        render_template("shared.html", trip=trip, editable=False, map_data=map_payload(trip))
+    )
     # Shared pages are capability URLs: keep them out of search engines and referrers.
     resp.headers["X-Robots-Tag"] = "noindex, nofollow"
     resp.headers["Referrer-Policy"] = "no-referrer"

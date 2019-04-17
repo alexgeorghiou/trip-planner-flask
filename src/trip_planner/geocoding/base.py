@@ -32,7 +32,9 @@ class Place:
 
 class Geocoder(ABC):
     @abstractmethod
-    def search(self, query: str, *, limit: int = 5, country_codes: list[str] | None = None) -> list[Place]:
+    def search(
+        self, query: str, *, limit: int = 5, country_codes: list[str] | None = None
+    ) -> list[Place]:
         """Forward geocode free text into candidate places, best match first."""
 
     def close(self) -> None:  # noqa: B027 - optional hook for clients that hold connections

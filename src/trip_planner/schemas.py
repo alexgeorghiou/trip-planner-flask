@@ -13,6 +13,7 @@ Lon = validate.Range(min=-180, max=180)
 
 # --- stops -----------------------------------------------------------------------------------
 
+
 class StopSchema(Schema):
     id = fields.Int(dump_only=True)
     day_id = fields.Int(dump_only=True)
@@ -42,6 +43,7 @@ class ReorderSchema(Schema):
 
 
 # --- days ------------------------------------------------------------------------------------
+
 
 class DaySchema(Schema):
     id = fields.Int(dump_only=True)
@@ -75,6 +77,7 @@ class RoutePlanSchema(Schema):
 
 
 # --- trips -----------------------------------------------------------------------------------
+
 
 class TripBaseSchema(Schema):
     id = fields.Int(dump_only=True)
@@ -123,6 +126,7 @@ class SharedTripSchema(Schema):
 
 # --- places ----------------------------------------------------------------------------------
 
+
 class PlaceSearchArgsSchema(Schema):
     q = fields.Str(required=True, validate=validate.Length(min=2, max=200))
     limit = fields.Int(load_default=5, validate=validate.Range(min=1, max=20))
@@ -142,6 +146,7 @@ class PlaceSchema(Schema):
 
 
 # --- sharing ---------------------------------------------------------------------------------
+
 
 class ShareLinkCreateSchema(Schema):
     label = fields.Str(allow_none=True, validate=validate.Length(max=100))
