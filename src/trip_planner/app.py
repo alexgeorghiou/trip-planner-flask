@@ -10,6 +10,7 @@ from werkzeug.wrappers import Response
 
 from . import models  # noqa: F401  (register tables)
 from .api import create_api
+from .cli import register_cli
 from .config import CONFIGS
 from .errors import DomainError
 from .extensions import db
@@ -35,6 +36,7 @@ def create_app(
     app.register_blueprint(web_bp)
 
     register_error_handlers(app)
+    register_cli(app)
 
     @app.get("/healthz")
     def healthz() -> dict[str, str]:
