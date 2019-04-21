@@ -41,3 +41,17 @@ def test_share_link_activity():
     link.expires_at = None
     link.revoked_at = now
     assert not link.is_active(now)
+
+
+def test_database_level_cascade(app):
+    """Deleting with a bulk statement bypasses the ORM, so this relies on SQLite FK enforcement."""
+    from sqlalchemy import delete
+
+    with app.app_context():
+        trip = Trip(title="x", start_date=dt.date(2026, 1, 1), end_date=dt.date(2026, 1, 1))
+        trip.days.append(Day(date=dt.date(2026, 1, 1)))
+        db.session.add(trip)
+        db.session.commit()
+        db.session.execute(delete(Trip))
+        db.session.commit()
+        assert db.session.query(Day).count() == 0
