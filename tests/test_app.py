@@ -41,3 +41,14 @@ def test_unknown_geocoder_config_fails_fast():
 
     with pytest.raises(ValueError):
         create_app("testing", {"GEOCODER": "nope"})
+
+
+def test_auto_create_tables_can_be_disabled():
+    from sqlalchemy import inspect
+
+    from trip_planner.app import create_app
+    from trip_planner.extensions import db
+
+    app = create_app("testing", {"AUTO_CREATE_TABLES": False})
+    with app.app_context():
+        assert "trips" not in inspect(db.engine).get_table_names()

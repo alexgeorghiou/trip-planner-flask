@@ -42,8 +42,9 @@ def create_app(
     def healthz() -> dict[str, str]:
         return {"status": "ok"}
 
-    with app.app_context():
-        db.create_all()
+    if app.config["AUTO_CREATE_TABLES"]:
+        with app.app_context():
+            db.create_all()
 
     return app
 

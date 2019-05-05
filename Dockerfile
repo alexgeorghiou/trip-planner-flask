@@ -10,7 +10,7 @@ RUN pip wheel --wheel-dir /wheels ".[prod,postgres]"
 FROM python:3.12-slim AS runtime
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    FLASK_CONFIG=production \
+    FLASK_CONFIG=production     AUTO_CREATE_TABLES=0 \
     DATABASE_URL=sqlite:////data/trip_planner.sqlite3
 RUN useradd --create-home --uid 10001 app && mkdir /data && chown app /data
 COPY --from=build /wheels /wheels
@@ -21,4 +21,6 @@ VOLUME ["/data"]
 EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s \
   CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=2)"
+COPY --chown=app docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+ENTRYPOINT ["sh", "/usr/local/bin/docker-entrypoint.sh"]
 CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "2", "--access-logfile", "-", "trip_planner.wsgi:app"]

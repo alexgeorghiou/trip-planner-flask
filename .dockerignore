@@ -6,3 +6,4 @@
 instance
 *.sqlite3
 tests
+!docker-entrypoint.sh

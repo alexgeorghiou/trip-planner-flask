@@ -9,6 +9,9 @@ class Config:
     SECRET_KEY = os.environ.get("SECRET_KEY", "dev-only-change-me")
     SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL", "sqlite:///trip_planner.sqlite3")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    # Convenient for local runs; containers create tables once via `flask init-db` instead,
+    # so several gunicorn workers don't race each other on startup.
+    AUTO_CREATE_TABLES = os.environ.get("AUTO_CREATE_TABLES", "1") == "1"
 
     # flask-smorest / OpenAPI
     API_TITLE = "Trip Planner API"
