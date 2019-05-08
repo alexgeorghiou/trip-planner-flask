@@ -27,7 +27,7 @@ class Config:
     NOMINATIM_URL = os.environ.get("NOMINATIM_URL", "https://nominatim.openstreetmap.org")
     # Nominatim's usage policy requires an identifying User-Agent with a contact address.
     NOMINATIM_USER_AGENT = os.environ.get(
-        "NOMINATIM_USER_AGENT", "trip-planner-flask/0.1 (+https://github.com/alexgeorghiou)"
+        "NOMINATIM_USER_AGENT", "trip-planner-flask/0.1 (self-hosted)"
     )
     NOMINATIM_EMAIL = os.environ.get("NOMINATIM_EMAIL")
     NOMINATIM_TIMEOUT = float(os.environ.get("NOMINATIM_TIMEOUT", "5"))
