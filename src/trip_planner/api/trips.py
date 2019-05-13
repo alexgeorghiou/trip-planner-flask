@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import json
 from typing import Any
 
+from flask import Response
 from flask.views import MethodView
 from flask_smorest import Blueprint
 from sqlalchemy import func, or_, select
@@ -19,6 +21,7 @@ from ..schemas import (
     TripSummarySchema,
 )
 from ..services import itinerary
+from ..services.export import trip_geojson
 
 blp = Blueprint("trips", __name__, description="Plan trips and browse their days")
 
@@ -85,3 +88,12 @@ class TripDays(MethodView):
     def get(self, trip_id: int) -> list[Any]:
         """Days of a trip in date order"""
         return db.get_or_404(Trip, trip_id).days
+
+
+@blp.route("/trips/<int:trip_id>/geojson")
+class TripGeoJSON(MethodView):
+    @blp.response(200, content_type="application/geo+json")
+    def get(self, trip_id: int) -> Response:
+        """Stops and per-day routes as a GeoJSON FeatureCollection"""
+        body = json.dumps(trip_geojson(db.get_or_404(Trip, trip_id)))
+        return Response(body, mimetype="application/geo+json")
