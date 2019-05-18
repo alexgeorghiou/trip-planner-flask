@@ -12,8 +12,11 @@
     {% if trip.notes %}<p>{{ trip.notes }}</p>{% endif %}
   </div>
   {% if editable %}
+  <div class="row">
+  <a class="pill" href="{{ url_for('trips.TripGeoJSON', trip_id=trip.id) }}" download="trip-{{ trip.id }}.geojson">Export GeoJSON</a>
   <button class="danger" hx-post="{{ url_for('web.delete_trip', trip_id=trip.id) }}"
           hx-confirm="Delete {{ trip.title }} and all its days?">Delete trip</button>
+  </div>
   {% endif %}
 </section>
 
