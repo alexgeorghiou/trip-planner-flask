@@ -113,6 +113,17 @@ class TripListArgsSchema(Schema):
     q = fields.Str(metadata={"description": "Filter by title or destination"})
 
 
+class SharedDaySchema(DaySchema):
+    """A day as seen through a share link: no internal IDs or private notes."""
+
+    class Meta:
+        exclude = ("id", "notes")
+
+    stops = fields.List(
+        fields.Nested(StopSchema(exclude=("id", "day_id", "notes"))), dump_only=True
+    )
+
+
 class SharedTripSchema(Schema):
     """What a share-link holder can see: the plan, without private notes or metadata."""
 
@@ -121,7 +132,7 @@ class SharedTripSchema(Schema):
     start_date = fields.Date()
     end_date = fields.Date()
     length_days = fields.Int()
-    days = fields.List(fields.Nested(DaySchema(exclude=("id",))))
+    days = fields.List(fields.Nested(SharedDaySchema))
 
 
 # --- places ----------------------------------------------------------------------------------

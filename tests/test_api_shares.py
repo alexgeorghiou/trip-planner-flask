@@ -35,6 +35,10 @@ def test_share_lifecycle(client, trip):
     assert body["title"] == "Kyoto"
     assert body["days"][0]["stops"][0]["name"] == "Fushimi Inari"
     assert "notes" not in body and "id" not in body
+    day, stop = body["days"][0], body["days"][0]["stops"][0]
+    assert "notes" not in day and "id" not in day
+    assert not {"notes", "id", "day_id"} & set(stop)
+    assert "secret" not in shared.get_data(as_text=True)
 
     revoked = client.delete(f"/api/shares/{link['id']}").get_json()
     assert revoked["active"] is False and revoked["revoked_at"]
