@@ -71,10 +71,18 @@ def first_error(err: ValidationError) -> str:
 # --- trips -----------------------------------------------------------------------------------
 
 
+def all_trips() -> list[Trip]:
+    return list(db.session.scalars(select(Trip).order_by(Trip.start_date, Trip.id)))
+
+
+def render_index(*, errors: dict[str, Any] | None = None, status: int = 200) -> tuple[str, int]:
+    form = request.form if errors else {}
+    return render_template("index.html", trips=all_trips(), errors=errors or {}, form=form), status
+
+
 @bp.get("/")
-def index() -> str:
-    trips = db.session.scalars(select(Trip).order_by(Trip.start_date, Trip.id)).all()
-    return render_template("index.html", trips=trips, errors={}, form={})
+def index() -> tuple[str, int]:
+    return render_index()
 
 
 @bp.post("/trips")
@@ -82,19 +90,10 @@ def create_trip() -> Any:
     try:
         trip = itinerary.create_trip(form_data(TripBaseSchema()))
     except ValidationError as err:
-        trips = db.session.scalars(select(Trip).order_by(Trip.start_date)).all()
-        return render_template(
-            "index.html", trips=trips, errors=err.normalized_messages(), form=request.form
-        ), 422
+        return render_index(errors=err.normalized_messages(), status=422)
     except DomainError as err:
         db.session.rollback()
-        trips = db.session.scalars(select(Trip).order_by(Trip.start_date)).all()
-        return render_template(
-            "index.html",
-            trips=trips,
-            errors={err.field or "_schema": [err.message]},
-            form=request.form,
-        ), 422
+        return render_index(errors={err.field or "_schema": [err.message]}, status=422)
     target = url_for("web.trip_detail", trip_id=trip.id)
     if is_htmx():
         return Response(status=204, headers={"HX-Redirect": target})

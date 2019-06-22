@@ -152,3 +152,13 @@ def test_delete_trip(client, trip_id):
     resp = client.post(f"/trips/{trip_id}/delete", headers=HX)
     assert resp.headers["HX-Redirect"] == "/"
     assert client.get(f"/trips/{trip_id}").status_code == 404
+
+
+def test_overlong_trip_form_shows_domain_error(client):
+    resp = client.post(
+        "/trips", data={"title": "Gap year", "start_date": "2026-01-01", "end_date": "2026-12-31"}
+    )
+    assert resp.status_code == 422
+    html = resp.get_data(as_text=True)
+    assert "90 days" in html
+    assert 'value="Gap year"' in html  # form values are preserved
