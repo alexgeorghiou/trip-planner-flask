@@ -114,6 +114,7 @@ The image runs `flask init-db` once in its entrypoint and then starts gunicorn a
 ```bash
 pytest -q
 ruff check . && ruff format --check .
+# or, on Linux/macOS: make install lint test
 ```
 
 The tests make no network calls. The Nominatim client is tested against an `httpx.MockTransport`,
